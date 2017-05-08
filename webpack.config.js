@@ -1,3 +1,5 @@
+require('babel-polyfill')
+
 const webpack = require('webpack')
 const path = require('path')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
@@ -8,16 +10,26 @@ const extractCommons = new webpack.optimize.CommonsChunkPlugin({
   filename: 'commons.js'
 })
 
+const DEBUG = !process.argv.includes('--env.release');
+
+const dir = {
+  src: 'src',
+  dev: DEBUG ? '.tmp' : 'build'
+}
+
 const config = {
-  context: path.resolve(__dirname, 'src'),
+  context: path.resolve(__dirname, dir.src),
   entry: {
     app: './app.js',
     app2: './app2.js'
   },
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, dir.dev),
     filename: '[name].bundle.js',
-    publicPath: '/dist/'
+    publicPath: dir.dev
+  },
+  devServer: {
+    contentBase : dir.src
   },
   module: {
     rules: [
@@ -34,7 +46,7 @@ const config = {
       },
       {
         test: /\.js$/,
-        include: path.resolve(__dirname, 'src'),
+        include: path.resolve(__dirname, dir.src),
         use: [{
           loader: 'babel-loader',
           options: {
